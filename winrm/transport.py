@@ -107,7 +107,7 @@ class HttpPlaintext(HttpTransport):
                             ' Code {0}'.format(ex.code)
             if ex.msg:
                 error_message += ', {0}'.format(ex.msg)
-            raise WinRMTransportError('http', error_message)
+            raise WinRMTransportError('http', error_message, response_text)
         except URLError as ex:
             raise WinRMTransportError('http', ex.reason)
 

@@ -1,4 +1,5 @@
 import sys
+import time
 
 from winrm.exceptions import WinRMTransportError, UnauthorizedError
 
@@ -101,41 +102,50 @@ class HttpPlaintext(HttpTransport):
 
         self._setup_opener()
         request = Request(self.endpoint, data=message, headers=headers)
+<<<<<<< HEAD
 
-        try:
-            # install_opener is ignored in > 2.7.9 when an SSLContext is passed to urlopen, so
-            # we'll have to call open manually with our stored opener chain
-            response = self.opener.open(request, timeout=self.timeout)
-            # Version 1.1 of WinRM adds the namespaces in the document instead
-            # of the envelope so we have to
-            # add them ourselves here. This should have no affect version 2.
-            response_text = response.read()
-            return response_text
-            # doc = ElementTree.fromstring(response.read())
-            # Ruby
-            # doc = Nokogiri::XML(resp.http_body.content)
-            # doc.collect_namespaces.each_pair do |k,v|
-            #    doc.root.add_namespace((k.split(/:/).last),v)
-            #    unless doc.namespaces.has_key?(k)
-            # end
-            # return doc
-            # return doc
-        except HTTPError as ex:
-            if ex.code == 401:
-                raise UnauthorizedError(transport='plaintext', message=ex.msg)
-            response_text = ex.read()
-            # Per http://msdn.microsoft.com/en-us/library/cc251676.aspx rule 3,
-            # should handle this 500 error and retry receiving command output.
-            if 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive' in message and 'Code="2150858793"' in response_text:  # NOQA
-                # TODO raise TimeoutError here instead of just return text
+        retries_count = 30
+        for attempt in range(1, retries_count + 1):
+            try:
+                # install_opener is ignored in > 2.7.9 when an SSLContext is passed to urlopen, so
+                # we'll have to call open manually with our stored opener chain
+                response = self.opener.open(request, timeout=self.timeout)
+                # Version 1.1 of WinRM adds the namespaces in the document instead
+                # of the envelope so we have to
+                # add them ourselves here. This should have no affect version 2.
+                response_text = response.read()
                 return response_text
-            error_message = 'Bad HTTP response returned from server. ' \
-                            ' Code {0}'.format(ex.code)
-            if ex.msg:
-                error_message += ', {0}'.format(ex.msg)
-            raise WinRMTransportError('http', error_message)
-        except URLError as ex:
-            raise WinRMTransportError('http', ex.reason)
+                # doc = ElementTree.fromstring(response.read())
+                # Ruby
+                # doc = Nokogiri::XML(resp.http_body.content)
+                # doc.collect_namespaces.each_pair do |k,v|
+                #    doc.root.add_namespace((k.split(/:/).last),v)
+                #    unless doc.namespaces.has_key?(k)
+                # end
+                # return doc
+                # return doc
+            except HTTPError as ex:
+                if ex.code == 401:
+                    raise UnauthorizedError(transport='plaintext', message=ex.msg)
+                response_text = ex.read()
+                # Per http://msdn.microsoft.com/en-us/library/cc251676.aspx rule 3,
+                # should handle this 500 error and retry receiving command output.
+                if 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive' in message and 'Code="2150858793"' in response_text:  # NOQA
+                    # TODO raise TimeoutError here instead of just return text
+                    return response_text
+                error_message = 'Bad HTTP response returned from server. ' \
+                                ' Code {0}'.format(ex.code)
+                if ex.msg:
+                    error_message += ', {0}'.format(ex.msg)
+                if ex.code != 500 or attempt == retries_count:
+                    raise WinRMTransportError('http', error_message)
+                else:
+                    print 'retry attempt: {0}'.format(attempt)
+            except URLError as ex:
+                raise WinRMTransportError('http', ex.reason)
+            else:
+                break
+            time.sleep(1)
 
 
 class HTTPSClientAuthHandler(HTTPSHandler):

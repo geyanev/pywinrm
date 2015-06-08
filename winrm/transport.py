@@ -102,7 +102,6 @@ class HttpPlaintext(HttpTransport):
 
         self._setup_opener()
         request = Request(self.endpoint, data=message, headers=headers)
-<<<<<<< HEAD
 
         retries_count = 30
         for attempt in range(1, retries_count + 1):
@@ -141,6 +140,9 @@ class HttpPlaintext(HttpTransport):
                     raise WinRMTransportError('http', error_message)
                 else:
                     print 'retry attempt: {0}'.format(attempt)
+                    print 'response code: {0}'.format(ex.code)
+                    print 'error message: {0}'.format(ex.msg)
+                    print 'response text: {0}'.format(response_text)
             except URLError as ex:
                 raise WinRMTransportError('http', ex.reason)
             else:

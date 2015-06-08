@@ -141,6 +141,9 @@ class HttpPlaintext(HttpTransport):
                     raise WinRMTransportError('http', error_message)
                 else:
                     print 'retry attempt: {0}'.format(attempt)
+                    print 'response code: {0}'.format(ex.code)
+                    print 'error message: {0}'.format(ex.msg)
+                    print 'response text: {0}'.format(response_text)
             except URLError as ex:
                 raise WinRMTransportError('http', ex.reason)
             else:

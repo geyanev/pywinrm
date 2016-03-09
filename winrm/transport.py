@@ -102,7 +102,6 @@ class HttpPlaintext(HttpTransport):
 
         self._setup_opener()
         request = Request(self.endpoint, data=message, headers=headers)
-<<<<<<< HEAD
 
         retries_count = 30
         for attempt in range(1, retries_count + 1):
